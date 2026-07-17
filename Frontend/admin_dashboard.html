@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Nautica Control Center</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Dynamic Header Nav (Rendered via script.js) -->
+    <header id="main-header"></header>
+
+    <main class="container">
+        <!-- Control Header -->
+        <section class="glass-card gold-border">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2 style="font-size: 2.2rem; margin-bottom: 0.25rem;"><i class="fas fa-user-shield text-warning"></i> Admin Control Center</h2>
+                    <p style="color: var(--text-secondary);">Manage ship fleets, plan schedules, monitor ticket reservations, and review transaction receipts.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Tabs -->
+        <div class="tab-menu">
+            <button class="tab-btn active" onclick="switchTab('passengers')"><i class="fas fa-users"></i> Passengers</button>
+            <button class="tab-btn" onclick="switchTab('ships')"><i class="fas fa-ship"></i> Ships</button>
+            <button class="tab-btn" onclick="switchTab('schedules')"><i class="fas fa-route"></i> Routes & Schedules</button>
+            <button class="tab-btn" onclick="switchTab('bookings')"><i class="fas fa-ticket-alt"></i> Bookings</button>
+            <button class="tab-btn" onclick="switchTab('payments')"><i class="fas fa-file-invoice-dollar"></i> Payments</button>
+        </div>
+
+        <!-- ==================== PASSENGERS TAB ==================== -->
+        <div id="tab-passengers" class="tab-content active">
+            <div class="glass-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>All Registered Passengers</h3>
+                    <button class="btn btn-primary btn-sm" onclick="openAddModal('passenger')"><i class="fas fa-plus"></i> Add Passenger</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Nationality</th>
+                                <th>Passport Number</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbl-passengers">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== SHIPS TAB ==================== -->
+        <div id="tab-ships" class="tab-content">
+            <div class="glass-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>Fleet Management</h3>
+                    <button class="btn btn-primary btn-sm" onclick="openAddModal('ship')"><i class="fas fa-plus"></i> Add Ship</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Ship Name</th>
+                                <th>Type</th>
+                                <th>Capacity</th>
+                                <th>Operator Name</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbl-ships">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== ROUTES & SCHEDULES TAB ==================== -->
+        <div id="tab-schedules" class="tab-content">
+            <div class="glass-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>Journey Routes & Schedules</h3>
+                    <button class="btn btn-primary btn-sm" onclick="openAddModal('schedule')"><i class="fas fa-plus"></i> Create Schedule</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Ship Name</th>
+                                <th>Route</th>
+                                <th>Departure</th>
+                                <th>Arrival</th>
+                                <th>Base Fare</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbl-schedules">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== BOOKINGS TAB ==================== -->
+        <div id="tab-bookings" class="tab-content">
+            <div class="glass-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>Cabin & Ticket Bookings</h3>
+                    <button class="btn btn-primary btn-sm" onclick="openAddModal('booking')"><i class="fas fa-plus"></i> Add Booking</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Passenger</th>
+                                <th>Ship</th>
+                                <th>Cabin</th>
+                                <th>Journey Date</th>
+                                <th>Total Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbl-bookings">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== PAYMENTS TAB ==================== -->
+        <div id="tab-payments" class="tab-content">
+            <div class="glass-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>Transactions Logs</h3>
+                    <button class="btn btn-primary btn-sm" onclick="openAddModal('payment')"><i class="fas fa-plus"></i> Add Transaction</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Payment ID</th>
+                                <th>Booking ID</th>
+                                <th>Passenger</th>
+                                <th>Amount</th>
+                                <th>Gateway</th>
+                                <th>Transaction Ref</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbl-payments">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ==================== MODALS LIST ==================== -->
+
+    <!-- PASSENGER ADD/EDIT MODAL -->
+    <div id="modal-passenger" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title" id="passenger-modal-title">Add Passenger</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="form-passenger">
+                <input type="hidden" id="pass-id">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="pass-name">Full Name</label>
+                        <input type="text" id="pass-name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="pass-email">Email Address</label>
+                        <input type="email" id="pass-email" class="form-control" required>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label" for="pass-phone">Phone</label>
+                            <input type="text" id="pass-phone" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="pass-nationality">Nationality</label>
+                            <input type="text" id="pass-nationality" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="pass-passport">Passport Number</label>
+                        <input type="text" id="pass-passport" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="pass-password">Password</label>
+                        <input type="password" id="pass-password" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SHIP ADD/EDIT MODAL -->
+    <div id="modal-ship" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title" id="ship-modal-title">Add Ship</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="form-ship">
+                <input type="hidden" id="ship-id">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="ship-name">Ship Name</label>
+                        <input type="text" id="ship-name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="ship-type">Ship Type</label>
+                        <select id="ship-type" class="form-control" required>
+                            <option value="Cruise Ship">Cruise Ship</option>
+                            <option value="Ferry">Ferry</option>
+                            <option value="Cargo Passenger Ship">Cargo Passenger Ship</option>
+                            <option value="Luxury Yacht">Luxury Yacht</option>
+                            <option value="River Cruise">River Cruise</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="ship-capacity">Total Capacity</label>
+                        <input type="number" id="ship-capacity" class="form-control" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="ship-operator">Operator Name</label>
+                        <input type="text" id="ship-operator" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="ship-status">Status</label>
+                        <select id="ship-status" class="form-control" required>
+                            <option value="Active">Active</option>
+                            <option value="Maintenance">Maintenance</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCHEDULE ADD/EDIT MODAL -->
+    <div id="modal-schedule" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title" id="schedule-modal-title">Create Voyage Schedule</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="form-schedule">
+                <input type="hidden" id="sch-id">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="sch-ship">Ship Name</label>
+                        <select id="sch-ship" class="form-control" required>
+                            <!-- Dynamically loaded list of ships -->
+                        </select>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label" for="sch-source">Source Port</label>
+                            <input type="text" id="sch-source" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="sch-dest">Destination Port</label>
+                            <input type="text" id="sch-dest" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label" for="sch-dep-date">Departure Date</label>
+                            <input type="date" id="sch-dep-date" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="sch-dep-time">Departure Time</label>
+                            <input type="time" id="sch-dep-time" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label" for="sch-arr-date">Arrival Date</label>
+                            <input type="date" id="sch-arr-date" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="sch-arr-time">Arrival Time</label>
+                            <input type="time" id="sch-arr-time" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="sch-fare">Base Fare (INR)</label>
+                        <input type="number" id="sch-fare" class="form-control" min="0" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- BOOKING ADD/EDIT MODAL -->
+    <div id="modal-booking" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title" id="booking-modal-title">Record Booking</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="form-booking">
+                <input type="hidden" id="book-id">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="book-passenger">Passenger Name</label>
+                        <select id="book-passenger" class="form-control" required>
+                            <!-- Dynamically loaded registered users -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="book-ship">Ship Name</label>
+                        <select id="book-ship" class="form-control" required>
+                            <!-- Dynamically loaded ships list -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="book-cabin">Cabin Type</label>
+                        <select id="book-cabin" class="form-control" required>
+                            <option value="Economy">Economy</option>
+                            <option value="Deluxe">Deluxe</option>
+                            <option value="Suite">Suite</option>
+                            <option value="Family Cabin">Family Cabin</option>
+                            <option value="VIP Cabin">VIP Cabin</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="book-date">Journey Date</label>
+                        <input type="date" id="book-date" class="form-control" required>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label" for="book-source">Source Port</label>
+                            <input type="text" id="book-source" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="book-dest">Destination Port</label>
+                            <input type="text" id="book-dest" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="book-amount">Total Fare Paid (INR)</label>
+                        <input type="number" id="book-amount" class="form-control" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="book-status">Booking Status</label>
+                        <select id="book-status" class="form-control" required>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Waiting">Waiting</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PAYMENT ADD/EDIT MODAL -->
+    <div id="modal-payment" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title" id="payment-modal-title">Record Transaction Receipt</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="form-payment">
+                <input type="hidden" id="pay-id">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="pay-booking-select">Booking ID Reference</label>
+                        <select id="pay-booking-select" class="form-control" onchange="autoFillPaymentFields()" required>
+                            <!-- Dynamically loaded list of bookings -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="pay-passenger">Passenger Name</label>
+                        <input type="text" id="pay-passenger" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="pay-amount">Amount (INR)</label>
+                        <input type="number" id="pay-amount-input" class="form-control" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="pay-method">Payment Gateway</label>
+                        <select id="pay-method" class="form-control" required>
+                            <option value="UPI">UPI</option>
+                            <option value="Credit Card">Credit Card</option>
+                            <option value="Debit Card">Debit Card</option>
+                            <option value="Net Banking">Net Banking</option>
+                            <option value="Wallet">Wallet</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="pay-status">Transaction Status</label>
+                        <select id="pay-status" class="form-control" required>
+                            <option value="Success">Success</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Failed">Failed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="pay-txn">Transaction Reference Code</label>
+                        <input type="text" id="pay-txn" class="form-control" placeholder="TXN789456123" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="pay-date">Transaction Date</label>
+                        <input type="date" id="pay-date" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script Imports -->
+    <script src="script.js"></script>
+    <script>
+        // State storage
+        let passengers = [];
+        let ships = [];
+        let schedules = [];
+        let bookings = [];
+        let payments = [];
+        
+        let currentOpenTab = "passengers";
+        let editMode = false;
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            if (!checkAuth("admin")) return;
+            await loadAllCollections();
+            renderTableData("passengers");
+        });
+
+        async function loadAllCollections() {
+            try {
+                passengers = await apiCall("/passengers/");
+                ships = await apiCall("/ships/");
+                schedules = await apiCall("/schedules/");
+                bookings = await apiCall("/bookings/");
+                payments = await apiCall("/payments/");
+            } catch (error) {
+                console.error("Admin dashboard failed data sync:", error);
+            }
+        }
+
+        function switchTab(tabId) {
+            currentOpenTab = tabId;
+            document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+            document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+
+            // Highlight button
+            const activeBtn = Array.from(document.querySelectorAll(".tab-btn")).find(btn => btn.textContent.toLowerCase().includes(tabId === 'schedules' ? 'routes' : tabId));
+            if (activeBtn) activeBtn.classList.add("active");
+
+            // Display content
+            document.getElementById(`tab-${tabId}`).classList.add("active");
+            
+            renderTableData(tabId);
+        }
+
+        // ==================== RENDERING LOGIC ====================
+
+        function renderTableData(type) {
+            if (type === "passengers") {
+                const body = document.getElementById("tbl-passengers");
+                body.innerHTML = "";
+                passengers.forEach(p => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td><strong>#${p.passenger_id}</strong></td>
+                        <td>${p.full_name}</td>
+                        <td>${p.email}</td>
+                        <td>${p.phone}</td>
+                        <td>${p.nationality}</td>
+                        <td>${p.passport_number}</td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" style="padding:0.25rem 0.5rem;" onclick="openEditModal('passenger', ${p.passenger_id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-danger btn-sm" style="padding:0.25rem 0.5rem;" onclick="deleteEntity('passenger', ${p.passenger_id})"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    `;
+                    body.appendChild(tr);
+                });
+            } else if (type === "ships") {
+                const body = document.getElementById("tbl-ships");
+                body.innerHTML = "";
+                ships.forEach(s => {
+                    let badgeClass = "badge-success";
+                    if (s.status === "Maintenance") badgeClass = "badge-warning";
+                    if (s.status === "Inactive") badgeClass = "badge-danger";
+                    
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td><strong>#${s.ship_id}</strong></td>
+                        <td><i class="fas fa-ship"></i> ${s.ship_name}</td>
+                        <td>${s.ship_type}</td>
+                        <td>${s.capacity} guests</td>
+                        <td>${s.operator_name}</td>
+                        <td><span class="badge ${badgeClass}">${s.status}</span></td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" style="padding:0.25rem 0.5rem;" onclick="openEditModal('ship', ${s.ship_id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-danger btn-sm" style="padding:0.25rem 0.5rem;" onclick="deleteEntity('ship', ${s.ship_id})"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    `;
+                    body.appendChild(tr);
+                });
+            } else if (type === "schedules") {
+                const body = document.getElementById("tbl-schedules");
+                body.innerHTML = "";
+                schedules.forEach(s => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td><strong>#${s.schedule_id}</strong></td>
+                        <td>${s.ship_name}</td>
+                        <td>${s.source_port} <i class="fas fa-long-arrow-alt-right" style="color:var(--text-muted);"></i> ${s.destination_port}</td>
+                        <td>${formatDate(s.departure_date)} at ${s.departure_time}</td>
+                        <td>${formatDate(s.arrival_date)} at ${s.arrival_time}</td>
+                        <td style="color:var(--color-gold); font-weight:700;">${formatCurrency(s.fare)}</td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" style="padding:0.25rem 0.5rem;" onclick="openEditModal('schedule', ${s.schedule_id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-danger btn-sm" style="padding:0.25rem 0.5rem;" onclick="deleteEntity('schedule', ${s.schedule_id})"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    `;
+                    body.appendChild(tr);
+                });
+            } else if (type === "bookings") {
+                const body = document.getElementById("tbl-bookings");
+                body.innerHTML = "";
+                bookings.forEach(b => {
+                    let badgeClass = "badge-warning";
+                    if (b.booking_status === "Confirmed") badgeClass = "badge-success";
+                    if (b.booking_status === "Cancelled") badgeClass = "badge-danger";
+
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td><strong>#${b.booking_id}</strong></td>
+                        <td>${b.passenger_name}</td>
+                        <td>${b.ship_name}</td>
+                        <td>${b.cabin_type}</td>
+                        <td>${formatDate(b.journey_date)}</td>
+                        <td style="font-weight:700; color:var(--color-gold);">${formatCurrency(b.total_amount)}</td>
+                        <td><span class="badge ${badgeClass}">${b.booking_status}</span></td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" style="padding:0.25rem 0.5rem;" onclick="openEditModal('booking', ${b.booking_id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-danger btn-sm" style="padding:0.25rem 0.5rem;" onclick="deleteEntity('booking', ${b.booking_id})"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    `;
+                    body.appendChild(tr);
+                });
+            } else if (type === "payments") {
+                const body = document.getElementById("tbl-payments");
+                body.innerHTML = "";
+                payments.forEach(p => {
+                    let badgeClass = "badge-warning";
+                    if (p.payment_status === "Success") badgeClass = "badge-success";
+                    if (p.payment_status === "Failed") badgeClass = "badge-danger";
+
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td><strong>#${p.payment_id}</strong></td>
+                        <td><strong>#${p.booking_id}</strong></td>
+                        <td>${p.passenger_name}</td>
+                        <td style="font-weight:700;">${formatCurrency(p.amount)}</td>
+                        <td>${p.payment_method}</td>
+                        <td><code>${p.transaction_id}</code></td>
+                        <td><span class="badge ${badgeClass}">${p.payment_status}</span></td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" style="padding:0.25rem 0.5rem;" onclick="openEditModal('payment', ${p.payment_id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-danger btn-sm" style="padding:0.25rem 0.5rem;" onclick="deleteEntity('payment', ${p.payment_id})"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    `;
+                    body.appendChild(tr);
+                });
+            }
+        }
+
+        // ==================== OPEN MODAL LOGIC ====================
+
+        function openAddModal(type) {
+            editMode = false;
+            document.getElementById(`form-${type}`).reset();
+            
+            // Set titles
+            document.getElementById(`${type}-modal-title`).textContent = `Add New ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+            
+            // Load dependent fields
+            if (type === "schedule") {
+                populateShipsDropdown("sch-ship");
+            } else if (type === "booking") {
+                populatePassengersDropdown("book-passenger");
+                populateShipsDropdown("book-ship");
+            } else if (type === "payment") {
+                populateBookingsDropdown("pay-booking-select");
+                // Reset transaction code automatically
+                document.getElementById("pay-txn").value = "TXN" + Math.floor(100000000 + Math.random() * 900000000);
+                document.getElementById("pay-date").value = new Date().toISOString().split("T")[0];
+            }
+
+            openModal(`modal-${type}`);
+        }
+
+        function openEditModal(type, id) {
+            editMode = true;
+            document.getElementById(`${type}-modal-title`).textContent = `Edit ${type.charAt(0).toUpperCase() + type.slice(1)} Details`;
+            
+            if (type === "passenger") {
+                const item = passengers.find(p => p.passenger_id === id);
+                document.getElementById("pass-id").value = item.passenger_id;
+                document.getElementById("pass-name").value = item.full_name;
+                document.getElementById("pass-email").value = item.email;
+                document.getElementById("pass-phone").value = item.phone;
+                document.getElementById("pass-nationality").value = item.nationality;
+                document.getElementById("pass-passport").value = item.passport_number;
+                document.getElementById("pass-password").value = item.password;
+            } else if (type === "ship") {
+                const item = ships.find(s => s.ship_id === id);
+                document.getElementById("ship-id").value = item.ship_id;
+                document.getElementById("ship-name").value = item.ship_name;
+                document.getElementById("ship-type").value = item.ship_type;
+                document.getElementById("ship-capacity").value = item.capacity;
+                document.getElementById("ship-operator").value = item.operator_name;
+                document.getElementById("ship-status").value = item.status;
+            } else if (type === "schedule") {
+                populateShipsDropdown("sch-ship");
+                const item = schedules.find(s => s.schedule_id === id);
+                document.getElementById("sch-id").value = item.schedule_id;
+                document.getElementById("sch-ship").value = item.ship_name;
+                document.getElementById("sch-source").value = item.source_port;
+                document.getElementById("sch-dest").value = item.destination_port;
+                document.getElementById("sch-dep-date").value = item.departure_date;
+                document.getElementById("sch-dep-time").value = item.departure_time;
+                document.getElementById("sch-arr-date").value = item.arrival_date;
+                document.getElementById("sch-arr-time").value = item.arrival_time;
+                document.getElementById("sch-fare").value = item.fare;
+            } else if (type === "booking") {
+                populatePassengersDropdown("book-passenger");
+                populateShipsDropdown("book-ship");
+                const item = bookings.find(b => b.booking_id === id);
+                document.getElementById("book-id").value = item.booking_id;
+                document.getElementById("book-passenger").value = item.passenger_name;
+                document.getElementById("book-ship").value = item.ship_name;
+                document.getElementById("book-cabin").value = item.cabin_type;
+                document.getElementById("book-date").value = item.journey_date;
+                document.getElementById("book-source").value = item.source_port;
+                document.getElementById("book-dest").value = item.destination_port;
+                document.getElementById("book-amount").value = item.total_amount;
+                document.getElementById("book-status").value = item.booking_status;
+            } else if (type === "payment") {
+                populateBookingsDropdown("pay-booking-select");
+                const item = payments.find(p => p.payment_id === id);
+                document.getElementById("pay-id").value = item.payment_id;
+                document.getElementById("pay-booking-select").value = item.booking_id;
+                document.getElementById("pay-passenger").value = item.passenger_name;
+                document.getElementById("pay-amount-input").value = item.amount;
+                document.getElementById("pay-method").value = item.payment_method;
+                document.getElementById("pay-status").value = item.payment_status;
+                document.getElementById("pay-txn").value = item.transaction_id;
+                document.getElementById("pay-date").value = item.payment_date;
+            }
+
+            openModal(`modal-${type}`);
+        }
+
+        // ==================== DROPDOWNS AUTO-POPULATE ====================
+
+        function populateShipsDropdown(elementId) {
+            const select = document.getElementById(elementId);
+            select.innerHTML = '<option value="">Select Ship...</option>';
+            ships.forEach(s => {
+                const opt = document.createElement("option");
+                opt.value = s.ship_name;
+                opt.textContent = `${s.ship_name} (${s.ship_type})`;
+                select.appendChild(opt);
+            });
+        }
+
+        function populatePassengersDropdown(elementId) {
+            const select = document.getElementById(elementId);
+            select.innerHTML = '<option value="">Select Passenger...</option>';
+            passengers.forEach(p => {
+                const opt = document.createElement("option");
+                opt.value = p.full_name;
+                opt.textContent = `${p.full_name} (${p.email})`;
+                select.appendChild(opt);
+            });
+        }
+
+        function populateBookingsDropdown(elementId) {
+            const select = document.getElementById(elementId);
+            select.innerHTML = '<option value="">Select Booking Ref...</option>';
+            bookings.forEach(b => {
+                const opt = document.createElement("option");
+                opt.value = b.booking_id;
+                opt.textContent = `Booking #${b.booking_id} - ${b.passenger_name}`;
+                select.appendChild(opt);
+            });
+        }
+
+        function autoFillPaymentFields() {
+            const bookingId = document.getElementById("pay-booking-select").value;
+            if (!bookingId) return;
+            
+            const booking = bookings.find(b => b.booking_id == bookingId);
+            if (booking) {
+                document.getElementById("pay-passenger").value = booking.passenger_name;
+                document.getElementById("pay-amount-input").value = booking.total_amount;
+            }
+        }
+
+        // ==================== SUBMIT HANDLERS ====================
+
+        // Passenger submit
+        document.getElementById("form-passenger").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const id = document.getElementById("pass-id").value;
+            const payload = {
+                full_name: document.getElementById("pass-name").value,
+                email: document.getElementById("pass-email").value.trim().toLowerCase(),
+                phone: document.getElementById("pass-phone").value,
+                nationality: document.getElementById("pass-nationality").value,
+                passport_number: document.getElementById("pass-passport").value,
+                password: document.getElementById("pass-password").value
+            };
+            
+            try {
+                if (editMode) {
+                    await apiCall(`/passengers/update/${id}/`, "PUT", payload);
+                    showToast("Passenger updated successfully");
+                } else {
+                    await apiCall(`/passengers/add/`, "POST", payload);
+                    showToast("Passenger registered successfully");
+                }
+                closeModal("modal-passenger");
+                await loadAllCollections();
+                renderTableData("passengers");
+            } catch (err) {}
+        });
+
+        // Ship submit
+        document.getElementById("form-ship").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const id = document.getElementById("ship-id").value;
+            const payload = {
+                ship_name: document.getElementById("ship-name").value,
+                ship_type: document.getElementById("ship-type").value,
+                capacity: parseInt(document.getElementById("ship-capacity").value),
+                operator_name: document.getElementById("ship-operator").value,
+                status: document.getElementById("ship-status").value
+            };
+            
+            try {
+                if (editMode) {
+                    await apiCall(`/ships/update/${id}/`, "PUT", payload);
+                    showToast("Fleet details updated");
+                } else {
+                    await apiCall(`/ships/add/`, "POST", payload);
+                    showToast("Ship added to fleet");
+                }
+                closeModal("modal-ship");
+                await loadAllCollections();
+                renderTableData("ships");
+            } catch (err) {}
+        });
+
+        // Schedule submit
+        document.getElementById("form-schedule").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const id = document.getElementById("sch-id").value;
+            const payload = {
+                ship_name: document.getElementById("sch-ship").value,
+                source_port: document.getElementById("sch-source").value,
+                destination_port: document.getElementById("sch-dest").value,
+                departure_date: document.getElementById("sch-dep-date").value,
+                departure_time: document.getElementById("sch-dep-time").value,
+                arrival_date: document.getElementById("sch-arr-date").value,
+                arrival_time: document.getElementById("sch-arr-time").value,
+                fare: parseFloat(document.getElementById("sch-fare").value)
+            };
+            
+            try {
+                if (editMode) {
+                    await apiCall(`/schedules/update/${id}/`, "PUT", payload);
+                    showToast("Schedule updated");
+                } else {
+                    await apiCall(`/schedules/add/`, "POST", payload);
+                    showToast("Schedule route planned");
+                }
+                closeModal("modal-schedule");
+                await loadAllCollections();
+                renderTableData("schedules");
+            } catch (err) {}
+        });
+
+        // Booking submit
+        document.getElementById("form-booking").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const id = document.getElementById("book-id").value;
+            const payload = {
+                passenger_name: document.getElementById("book-passenger").value,
+                ship_name: document.getElementById("book-ship").value,
+                cabin_type: document.getElementById("book-cabin").value,
+                journey_date: document.getElementById("book-date").value,
+                source_port: document.getElementById("book-source").value,
+                destination_port: document.getElementById("book-dest").value,
+                total_amount: parseFloat(document.getElementById("book-amount").value),
+                booking_status: document.getElementById("book-status").value
+            };
+            
+            try {
+                if (editMode) {
+                    await apiCall(`/bookings/update/${id}/`, "PUT", payload);
+                    showToast("Booking reference modified");
+                } else {
+                    await apiCall(`/bookings/add/`, "POST", payload);
+                    showToast("Ticket reservation recorded");
+                }
+                closeModal("modal-booking");
+                await loadAllCollections();
+                renderTableData("bookings");
+            } catch (err) {}
+        });
+
+        // Payment submit
+        document.getElementById("form-payment").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const id = document.getElementById("pay-id").value;
+            const payload = {
+                booking_id: parseInt(document.getElementById("pay-booking-select").value),
+                passenger_name: document.getElementById("pay-passenger").value,
+                amount: parseFloat(document.getElementById("pay-amount-input").value),
+                payment_method: document.getElementById("pay-method").value,
+                payment_status: document.getElementById("pay-status").value,
+                transaction_id: document.getElementById("pay-txn").value,
+                payment_date: document.getElementById("pay-date").value
+            };
+            
+            try {
+                if (editMode) {
+                    await apiCall(`/payments/update/${id}/`, "PUT", payload);
+                    showToast("Payment record updated");
+                } else {
+                    await apiCall(`/payments/add/`, "POST", payload);
+                    showToast("Payment record stored");
+                }
+                closeModal("modal-payment");
+                await loadAllCollections();
+                renderTableData("payments");
+            } catch (err) {}
+        });
+
+        // ==================== DELETE LOGIC ====================
+
+        async function deleteEntity(type, id) {
+            if (!confirm(`Are you sure you want to permanently delete this ${type} (#${id})?`)) return;
+            
+            let endpoint = "";
+            if (type === "passenger") endpoint = `/passengers/delete/${id}/`;
+            else if (type === "ship") endpoint = `/ships/delete/${id}/`;
+            else if (type === "schedule") endpoint = `/schedules/delete/${id}/`;
+            else if (type === "booking") endpoint = `/bookings/delete/${id}/`;
+            else if (type === "payment") endpoint = `/payments/delete/${id}/`;
+
+            try {
+                showToast(`Deleting ${type} record...`, "info");
+                await apiCall(endpoint, "DELETE");
+                showToast("Record deleted successfully", "success");
+                
+                await loadAllCollections();
+                renderTableData(currentOpenTab);
+            } catch (error) {
+                console.error(`Failed to delete ${type}:`, error);
+            }
+        }
+    </script>
+</body>
+</html>

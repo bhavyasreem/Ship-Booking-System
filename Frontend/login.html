@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Nautica Cruises</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="display: flex; flex-direction: column; min-height: 100vh;">
+
+    <!-- Dynamic Header Nav (Rendered via script.js) -->
+    <header id="main-header"></header>
+
+    <main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem;">
+        <div class="glass-card" style="width: 100%; max-width: 450px; margin: 0;">
+            <div class="text-center" style="margin-bottom: 2rem;">
+                <i class="fas fa-ship" style="font-size: 3rem; background: var(--gradient-ocean); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem;"></i>
+                <h2>Welcome Back</h2>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Sign in to manage your bookings and explore voyages</p>
+            </div>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label class="form-label" for="login-email">Email Address</label>
+                    <input type="email" id="login-email" class="form-control" placeholder="name@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="login-password">Password</label>
+                    <input type="password" id="login-password" class="form-control" placeholder="Enter your password" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+            </form>
+            
+            <div class="text-center" style="margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+                Don't have an account? <a href="register.html" style="color: var(--color-accent-blue); font-weight: 600;">Register Here</a>
+            </div>
+
+            <!-- Demo details box -->
+            <div style="margin-top: 2rem; padding: 1rem; border-radius: var(--radius-sm); border: 1px solid rgba(255, 255, 255, 0.05); background: rgba(255, 255, 255, 0.02); font-size: 0.8rem; color: var(--text-muted);">
+                <strong>Demo Credentials:</strong><br>
+                Passenger: <code>rahul@gmail.com</code> / <code>rahul123</code><br>
+                Admin Panel: <code>admin@shipbooking.com</code> / <code>admin123</code>
+            </div>
+        </div>
+    </main>
+
+    <!-- Script Imports -->
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // If already logged in, redirect to respective dashboard
+            const user = getCurrentUser();
+            if (user) {
+                window.location.href = user.role === "admin" ? "admin_dashboard.html" : "passenger_dashboard.html";
+            }
+        });
+
+        document.getElementById("login-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("login-email").value.trim().toLowerCase();
+            const password = document.getElementById("login-password").value;
+            
+            // 1. Hardcoded admin check
+            if (email === "admin@shipbooking.com" && password === "admin123") {
+                const adminUser = {
+                    full_name: "System Administrator",
+                    email: "admin@shipbooking.com",
+                    role: "admin"
+                };
+                setCurrentUser(adminUser);
+                showToast("Admin access granted. Loading Control Center...", "success");
+                setTimeout(() => {
+                    window.location.href = "admin_dashboard.html";
+                }, 1000);
+                return;
+            }
+            
+            // 2. Fetch passengers from database
+            try {
+                const passengers = await apiCall("/passengers/");
+                const passenger = passengers.find(p => p.email && p.email.toLowerCase() === email && p.password === password);
+                
+                if (passenger) {
+                    // Set role as passenger
+                    passenger.role = "passenger";
+                    setCurrentUser(passenger);
+                    showToast(`Welcome back, ${passenger.full_name}!`, "success");
+                    setTimeout(() => {
+                        window.location.href = "passenger_dashboard.html";
+                    }, 1000);
+                } else {
+                    showToast("Invalid email or password. Please try again.", "danger");
+                }
+            } catch (error) {
+                console.error("Login verification failed:", error);
+                showToast("Connection to backend server failed. Please verify Django server is running.", "danger");
+            }
+        });
+    </script>
+</body>
+</html>

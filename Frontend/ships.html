@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Cruises & Voyages - Nautica Cruises</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Dynamic Header Nav (Rendered via script.js) -->
+    <header id="main-header"></header>
+
+    <main class="container">
+        <!-- Search & Filter Card -->
+        <section class="glass-card">
+            <h2 class="section-title"><i class="fas fa-filter" style="color: var(--color-accent-blue);"></i> Filter Journeys</h2>
+            <form id="filter-form">
+                <div class="grid-4">
+                    <div class="form-group">
+                        <label class="form-label" for="filter-source">Source Port</label>
+                        <select id="filter-source" class="form-control">
+                            <option value="">All Ports</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="filter-dest">Destination Port</label>
+                        <select id="filter-dest" class="form-control">
+                            <option value="">All Ports</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="filter-date">Journey Date</label>
+                        <input type="date" id="filter-date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="filter-type">Ship Type</label>
+                        <select id="filter-type" class="form-control">
+                            <option value="">All Types</option>
+                            <option value="Cruise Ship">Cruise Ship</option>
+                            <option value="Ferry">Ferry</option>
+                            <option value="Cargo Passenger Ship">Cargo Passenger Ship</option>
+                            <option value="Luxury Yacht">Luxury Yacht</option>
+                            <option value="River Cruise">River Cruise</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
+                    <button type="button" onclick="clearFilters()" class="btn btn-secondary"><i class="fas fa-undo"></i> Reset</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Apply Filters</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Listing Section -->
+        <section>
+            <h2 class="section-title"><i class="fas fa-ship" style="color: var(--color-gold);"></i> Available Voyages</h2>
+            <div id="listings-grid" class="grid-3">
+                <!-- Dynamically populated -->
+                <div class="card text-center" style="grid-column: 1 / -1; padding: 3rem;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2.5rem; color: var(--color-accent-blue); margin-bottom: 1rem;"></i>
+                    <p>Loading available voyages...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Script Imports -->
+    <script src="script.js"></script>
+    <script>
+        let allShips = [];
+        let allSchedules = [];
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            await loadData();
+            populateFilterOptions();
+            applyInitialSessionFilters();
+            renderListings();
+        });
+
+        async function loadData() {
+            try {
+                // Fetch schedules and ships from Django endpoints
+                allSchedules = await apiCall("/schedules/");
+                allShips = await apiCall("/ships/");
+            } catch (error) {
+                console.error("Failed to load listings data:", error);
+                document.getElementById("listings-grid").innerHTML = `
+                    <div class="card text-center" style="grid-column: 1 / -1; padding: 3rem;">
+                        <i class="fas fa-exclamation-triangle text-danger" style="font-size: 2.5rem; margin-bottom: 1rem;"></i>
+                        <p>Error connecting to backend database. Please ensure your servers are running.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function populateFilterOptions() {
+            const sourceSelect = document.getElementById("filter-source");
+            const destSelect = document.getElementById("filter-dest");
+            
+            const sources = [...new Set(allSchedules.map(s => s.source_port))];
+            const destinations = [...new Set(allSchedules.map(s => s.destination_port))];
+            
+            sources.forEach(port => {
+                const opt = document.createElement("option");
+                opt.value = port;
+                opt.textContent = port;
+                sourceSelect.appendChild(opt);
+            });
+            
+            destinations.forEach(port => {
+                const opt = document.createElement("option");
+                opt.value = port;
+                opt.textContent = port;
+                destSelect.appendChild(opt);
+            });
+
+            // Set min date to today
+            const today = new Date().toISOString().split("T")[0];
+            document.getElementById("filter-date").min = today;
+        }
+
+        function applyInitialSessionFilters() {
+            // Load if redirected with filter parameters from Homepage
+            const sSource = sessionStorage.getItem("search_source");
+            const sDest = sessionStorage.getItem("search_dest");
+            const sDate = sessionStorage.getItem("search_date");
+            
+            if (sSource) document.getElementById("filter-source").value = sSource;
+            if (sDest) document.getElementById("filter-dest").value = sDest;
+            if (sDate) document.getElementById("filter-date").value = sDate;
+            
+            // Clean up session filters to avoid persistent filter locks
+            sessionStorage.removeItem("search_source");
+            sessionStorage.removeItem("search_dest");
+            sessionStorage.removeItem("search_date");
+        }
+
+        function clearFilters() {
+            document.getElementById("filter-form").reset();
+            renderListings();
+        }
+
+        document.getElementById("filter-form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            renderListings();
+        });
+
+        function renderListings() {
+            const container = document.getElementById("listings-grid");
+            
+            const sourceFilter = document.getElementById("filter-source").value;
+            const destFilter = document.getElementById("filter-dest").value;
+            const dateFilter = document.getElementById("filter-date").value;
+            const typeFilter = document.getElementById("filter-type").value;
+            
+            // Filter schedules based on inputs
+            let filteredSchedules = allSchedules;
+            
+            if (sourceFilter) {
+                filteredSchedules = filteredSchedules.filter(s => s.source_port === sourceFilter);
+            }
+            if (destFilter) {
+                filteredSchedules = filteredSchedules.filter(s => s.destination_port === destFilter);
+            }
+            if (dateFilter) {
+                filteredSchedules = filteredSchedules.filter(s => s.departure_date === dateFilter);
+            }
+            
+            // Filter based on ship type (requires join on ship_name)
+            if (typeFilter) {
+                filteredSchedules = filteredSchedules.filter(sch => {
+                    const ship = allShips.find(s => s.ship_name === sch.ship_name);
+                    return ship && ship.ship_type === typeFilter;
+                });
+            }
+            
+            if (filteredSchedules.length === 0) {
+                container.innerHTML = `
+                    <div class="card text-center" style="grid-column: 1 / -1; padding: 4rem;">
+                        <i class="fas fa-ship-slash" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                        <h3>No Cruises Found</h3>
+                        <p style="color: var(--text-secondary);">Try clearing your search criteria or choosing other destinations.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = "";
+            
+            filteredSchedules.forEach(sch => {
+                // Find matching ship details
+                const ship = allShips.find(s => s.ship_name === sch.ship_name) || {
+                    ship_type: "Cruise Ship",
+                    capacity: 1000,
+                    operator_name: "General Operator",
+                    status: "Active"
+                };
+                
+                const card = document.createElement("div");
+                card.className = "card";
+                
+                // Ship layout image helper
+                let imgUrl = "https://images.unsplash.com/photo-1548574505-5e239809ee19?q=80&w=400&auto=format&fit=crop";
+                if (ship.ship_type === "Ferry") {
+                    imgUrl = "https://images.unsplash.com/photo-1559136555-9303baea8ebd?q=80&w=400&auto=format&fit=crop";
+                } else if (ship.ship_type === "Luxury Yacht") {
+                    imgUrl = "https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?q=80&w=400&auto=format&fit=crop";
+                }
+                
+                card.innerHTML = `
+                    <div class="card-img-placeholder">
+                        <img src="${imgUrl}" alt="${sch.ship_name}">
+                        <div class="card-tag">${ship.ship_type}</div>
+                    </div>
+                    
+                    <div style="margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">${ship.operator_name}</span>
+                        <h3>${sch.ship_name}</h3>
+                    </div>
+                    
+                    <div style="font-size: 0.9rem; margin-bottom: 1rem;">
+                        <p style="display: flex; justify-content: space-between;">
+                            <span><i class="fas fa-sign-out-alt text-success"></i> <strong>From:</strong> ${sch.source_port}</span>
+                        </p>
+                        <p style="display: flex; justify-content: space-between;">
+                            <span><i class="fas fa-sign-in-alt text-danger"></i> <strong>To:</strong> ${sch.destination_port}</span>
+                        </p>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem; border-top: 1px solid var(--border-glass); border-bottom: 1px solid var(--border-glass); padding: 0.5rem 0;">
+                        <span><i class="far fa-calendar-alt"></i> ${formatDate(sch.departure_date)}</span>
+                        <span><i class="fas fa-users"></i> Cap: ${ship.capacity}</span>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Starting Fare</span>
+                            <span style="font-size: 1.25rem; font-weight: 800; color: var(--color-gold);">${formatCurrency(sch.fare)}</span>
+                        </div>
+                        <button onclick="viewDetails(${sch.schedule_id})" class="btn btn-primary">View Details</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function viewDetails(scheduleId) {
+            sessionStorage.setItem("selected_schedule_id", scheduleId);
+            window.location.href = "ship_details.html";
+        }
+    </script>
+</body>
+</html>

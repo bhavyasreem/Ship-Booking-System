@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking History - Nautica Cruises</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Dynamic Header Nav (Rendered via script.js) -->
+    <header id="main-header"></header>
+
+    <main class="container">
+        <h2 class="section-title"><i class="fas fa-history" style="color: var(--color-gold);"></i> My Booking History</h2>
+        
+        <!-- Tab menu to switch between Upcoming and Past trips -->
+        <div class="tab-menu">
+            <button class="tab-btn active" onclick="switchTab('upcoming')">Upcoming Journeys</button>
+            <button class="tab-btn" onclick="switchTab('past')">Completed Travels</button>
+        </div>
+
+        <!-- Upcoming Trips Content -->
+        <div id="tab-upcoming" class="tab-content active">
+            <div class="glass-card">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Ship Name</th>
+                                <th>Journey Details</th>
+                                <th>Journey Date</th>
+                                <th>Cabin Type</th>
+                                <th>Amount Paid</th>
+                                <th>Booking Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="upcoming-trips-table">
+                            <tr>
+                                <td colspan="8" class="text-center">Loading journeys...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Past Trips Content -->
+        <div id="tab-past" class="tab-content">
+            <div class="glass-card">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Ship Name</th>
+                                <th>Journey Details</th>
+                                <th>Journey Date</th>
+                                <th>Cabin Type</th>
+                                <th>Amount Paid</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="past-trips-table">
+                            <tr>
+                                <td colspan="7" class="text-center">Loading journeys...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Script Imports -->
+    <script src="script.js"></script>
+    <script>
+        let myBookings = [];
+        let allPayments = [];
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            if (!checkAuth("passenger")) return;
+            await loadBookingData();
+            renderTables();
+        });
+
+        async function loadBookingData() {
+            const user = getCurrentUser();
+            try {
+                // Fetch all bookings and payments
+                const bookings = await apiCall("/bookings/");
+                allPayments = await apiCall("/payments/");
+                
+                // Filter bookings matching this passenger's full name
+                myBookings = bookings.filter(b => b.passenger_name === user.full_name);
+            } catch (error) {
+                console.error("Failed to load booking history:", error);
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+            document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+            
+            // Activate current
+            const activeBtn = Array.from(document.querySelectorAll(".tab-btn")).find(btn => btn.textContent.toLowerCase().includes(tabId));
+            if (activeBtn) activeBtn.classList.add("active");
+            
+            document.getElementById(`tab-${tabId}`).classList.add("active");
+        }
+
+        function renderTables() {
+            const upcomingBody = document.getElementById("upcoming-trips-table");
+            const pastBody = document.getElementById("past-trips-table");
+            
+            upcomingBody.innerHTML = "";
+            pastBody.innerHTML = "";
+            
+            const today = new Date().toISOString().split("T")[0];
+            
+            let upcomingCount = 0;
+            let pastCount = 0;
+            
+            myBookings.forEach(booking => {
+                // Check if payment successful
+                const payment = allPayments.find(p => p.booking_id === booking.booking_id);
+                const paymentStatus = payment ? payment.payment_status : "Pending";
+
+                const isUpcoming = booking.journey_date >= today;
+
+                const tr = document.createElement("tr");
+                
+                // Create badge details
+                let statusBadgeClass = "badge-warning";
+                if (booking.booking_status === "Confirmed") statusBadgeClass = "badge-success";
+                else if (booking.booking_status === "Cancelled") statusBadgeClass = "badge-danger";
+                
+                const statusBadge = `<span class="badge ${statusBadgeClass}">${booking.booking_status}</span>`;
+
+                if (isUpcoming) {
+                    upcomingCount++;
+                    
+                    let actionButtons = "";
+                    if (booking.booking_status === "Waiting") {
+                        actionButtons = `
+                            <button onclick="payBooking(${booking.booking_id}, ${booking.total_amount})" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;"><i class="fas fa-credit-card"></i> Pay Now</button>
+                            <button onclick="cancelBooking(${booking.booking_id})" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;"><i class="fas fa-times"></i> Cancel</button>
+                        `;
+                    } else if (booking.booking_status === "Confirmed") {
+                        actionButtons = `
+                            <button onclick="cancelBooking(${booking.booking_id})" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;"><i class="fas fa-trash-alt"></i> Cancel Ticket</button>
+                        `;
+                    } else {
+                        actionButtons = `<span style="color: var(--text-muted);">No actions available</span>`;
+                    }
+
+                    tr.innerHTML = `
+                        <td><strong>#${booking.booking_id}</strong></td>
+                        <td><i class="fas fa-ship"></i> ${booking.ship_name}</td>
+                        <td>${booking.source_port} to ${booking.destination_port}</td>
+                        <td>${formatDate(booking.journey_date)}</td>
+                        <td>${booking.cabin_type}</td>
+                        <td style="color: var(--color-gold); font-weight: 700;">${formatCurrency(booking.total_amount)}</td>
+                        <td>${statusBadge}</td>
+                        <td style="display: flex; gap: 0.5rem;">${actionButtons}</td>
+                    `;
+                    upcomingBody.appendChild(tr);
+                } else {
+                    pastCount++;
+                    tr.innerHTML = `
+                        <td><strong>#${booking.booking_id}</strong></td>
+                        <td><i class="fas fa-anchor"></i> ${booking.ship_name}</td>
+                        <td>${booking.source_port} to ${booking.destination_port}</td>
+                        <td>${formatDate(booking.journey_date)}</td>
+                        <td>${booking.cabin_type}</td>
+                        <td style="font-weight: 700;">${formatCurrency(booking.total_amount)}</td>
+                        <td>${statusBadge}</td>
+                    `;
+                    pastBody.appendChild(tr);
+                }
+            });
+
+            if (upcomingCount === 0) {
+                upcomingBody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center" style="padding: 2rem; color: var(--text-muted);">
+                            <i class="fas fa-calendar-times" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+                            No upcoming travels scheduled.
+                        </td>
+                    </tr>
+                `;
+            }
+            
+            if (pastCount === 0) {
+                pastBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center" style="padding: 2rem; color: var(--text-muted);">
+                            <i class="fas fa-history" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+                            No completed travels recorded.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        async function cancelBooking(bookingId) {
+            if (!confirm(`Are you sure you want to cancel booking #${bookingId}? This action will change status to Cancelled.`)) return;
+
+            try {
+                showToast("Processing ticket cancellation...", "info");
+                // PUT update booking status to Cancelled
+                await apiCall(`/bookings/update/${bookingId}/`, "PUT", {
+                    booking_status: "Cancelled"
+                });
+                
+                // If payment exists for this booking, we can also fail/refund it
+                const payment = allPayments.find(p => p.booking_id === bookingId);
+                if (payment) {
+                    await apiCall(`/payments/update/${payment.payment_id}/`, "PUT", {
+                        payment_status: "Failed"
+                    });
+                }
+                
+                showToast("Booking cancelled successfully.", "success");
+                await loadBookingData();
+                renderTables();
+            } catch (error) {
+                console.error("Failed to cancel booking:", error);
+            }
+        }
+
+        function payBooking(bookingId, amount) {
+            const user = getCurrentUser();
+            sessionStorage.setItem("payment_booking_id", bookingId);
+            sessionStorage.setItem("payment_amount", amount);
+            sessionStorage.setItem("payment_passenger_name", user.full_name);
+            window.location.href = "payment.html";
+        }
+    </script>
+</body>
+</html>

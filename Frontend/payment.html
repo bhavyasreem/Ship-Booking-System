@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Payment Checkout - Nautica Cruises</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Dynamic Header Nav (Rendered via script.js) -->
+    <header id="main-header"></header>
+
+    <main class="container">
+        <!-- Checkout Container -->
+        <div id="payment-panel" style="display: none;">
+            <div class="grid-2">
+                <!-- Left Column: Payment options form -->
+                <div>
+                    <section class="glass-card">
+                        <h2 class="section-title"><i class="fas fa-shield-alt" style="color: var(--color-success);"></i> Secure Payment Portal</h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Choose a payment gateway to complete your reservation.</p>
+
+                        <!-- Method Cards Selector -->
+                        <div class="payment-methods">
+                            <div class="payment-method-card selected" onclick="selectPaymentMethod('UPI', this)">
+                                <i class="fas fa-mobile-alt"></i>
+                                <span>UPI</span>
+                            </div>
+                            <div class="payment-method-card" onclick="selectPaymentMethod('Credit Card', this)">
+                                <i class="far fa-credit-card"></i>
+                                <span>Credit Card</span>
+                            </div>
+                            <div class="payment-method-card" onclick="selectPaymentMethod('Debit Card', this)">
+                                <i class="fas fa-credit-card"></i>
+                                <span>Debit Card</span>
+                            </div>
+                            <div class="payment-method-card" onclick="selectPaymentMethod('Net Banking', this)">
+                                <i class="fas fa-university"></i>
+                                <span>Net Banking</span>
+                            </div>
+                            <div class="payment-method-card" onclick="selectPaymentMethod('Wallet', this)">
+                                <i class="fas fa-wallet"></i>
+                                <span>Wallet</span>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Input Forms based on selection -->
+                        <form id="checkout-form">
+                            <!-- UPI Form -->
+                            <div id="form-UPI" class="payment-details-form">
+                                <div class="form-group">
+                                    <label class="form-label" for="upi-id">UPI ID / VPA</label>
+                                    <input type="text" id="upi-id" class="form-control" placeholder="username@upi" required>
+                                    <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; display: block;">Enter your mobile UPI address (e.g., rahul@okaxis, 9876543210@paytm)</span>
+                                </div>
+                            </div>
+
+                            <!-- Card Form (Shared by Credit & Debit) -->
+                            <div id="form-Card" class="payment-details-form" style="display: none;">
+                                <div class="form-group">
+                                    <label class="form-label" for="card-num">Card Number</label>
+                                    <input type="text" id="card-num" class="form-control" placeholder="4532 7894 1234 5678" pattern="\d{16}" title="16-digit card number">
+                                </div>
+                                <div class="grid-2">
+                                    <div class="form-group">
+                                        <label class="form-label" for="card-expiry">Expiry Date</label>
+                                        <input type="text" id="card-expiry" class="form-control" placeholder="MM/YY">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="card-cvv">CVV</label>
+                                        <input type="password" id="card-cvv" class="form-control" placeholder="123" maxlength="3">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Net Banking Form -->
+                            <div id="form-NetBanking" class="payment-details-form" style="display: none;">
+                                <div class="form-group">
+                                    <label class="form-label" for="bank-select">Select Bank</label>
+                                    <select id="bank-select" class="form-control">
+                                        <option value="">Choose your bank...</option>
+                                        <option value="SBI">State Bank of India</option>
+                                        <option value="HDFC">HDFC Bank</option>
+                                        <option value="ICICI">ICICI Bank</option>
+                                        <option value="Axis">Axis Bank</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Wallet Form -->
+                            <div id="form-Wallet" class="payment-details-form" style="display: none;">
+                                <div class="form-group">
+                                    <label class="form-label" for="wallet-select">Select Digital Wallet</label>
+                                    <select id="wallet-select" class="form-control">
+                                        <option value="">Choose wallet...</option>
+                                        <option value="Paytm">Paytm</option>
+                                        <option value="PhonePe">PhonePe</option>
+                                        <option value="AmazonPay">Amazon Pay</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-success" style="width: 100%; margin-top: 1.5rem;"><i class="fas fa-lock"></i> Authorize Secure Payment</button>
+                        </form>
+                    </section>
+                </div>
+
+                <!-- Right Column: Billing breakdown -->
+                <div>
+                    <section class="glass-card gold-border">
+                        <h2 class="section-title"><i class="fas fa-shopping-cart" style="color: var(--color-gold);"></i> Invoice Summary</h2>
+                        <div style="margin-top: 1.5rem;">
+                            <div class="summary-row">
+                                <span>Booking Reference:</span>
+                                <strong id="pay-booking-ref">#401</strong>
+                            </div>
+                            <div class="summary-row">
+                                <span>Passenger Name:</span>
+                                <span id="pay-passenger-name">Rahul Sharma</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Invoice Status:</span>
+                                <span class="badge badge-warning">Unpaid</span>
+                            </div>
+                            <div class="summary-row" style="margin-top: 1rem; border-top: 1px solid var(--border-glass); padding-top: 1rem;">
+                                <span>Payable Amount:</span>
+                                <strong id="pay-amount" style="color: var(--color-gold); font-size: 1.5rem;">INR 0</strong>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Receipt Panel -->
+        <div id="success-panel" style="display: none; text-align: center;">
+            <div class="glass-card" style="max-width: 550px; margin: 3rem auto; border-color: var(--color-success);">
+                <div style="margin-bottom: 2rem;">
+                    <i class="fas fa-check-circle" style="font-size: 5rem; color: var(--color-success); margin-bottom: 1rem; filter: drop-shadow(0 0 10px rgba(16,185,129,0.3));"></i>
+                    <h2 class="text-success" style="font-size: 2.2rem;">Payment Successful!</h2>
+                    <p style="color: var(--text-secondary);">Your ticket has been confirmed. A receipt is generated below.</p>
+                </div>
+
+                <div style="text-align: left; padding: 1.5rem; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px solid var(--border-glass); margin-bottom: 2rem; font-family: monospace;">
+                    <h3 style="text-align: center; margin-bottom: 1rem; font-family: var(--font-heading);">NAUTICA CRUISES RECEIPT</h3>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                        <span>Transaction ID:</span>
+                        <strong id="receipt-txn">TXN12345</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                        <span>Booking ID:</span>
+                        <strong id="receipt-booking">401</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                        <span>Passenger Name:</span>
+                        <span id="receipt-passenger">Rahul Sharma</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                        <span>Payment Gateway:</span>
+                        <span id="receipt-method">UPI</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                        <span>Transaction Date:</span>
+                        <span id="receipt-date">2026-09-20</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: bold; margin-top: 1rem; color: var(--color-gold);">
+                        <span>Amount Paid:</span>
+                        <span id="receipt-amount">INR 0</span>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <a href="passenger_dashboard.html" class="btn btn-secondary"><i class="fas fa-home"></i> Dashboard</a>
+                    <a href="booking_history.html" class="btn btn-primary"><i class="fas fa-ticket-alt"></i> View Tickets</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Missing Data Panel -->
+        <div id="no-payment-panel" class="card text-center" style="padding: 4rem; display: block;">
+            <i class="fas fa-credit-card-slash" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+            <h3>No Unpaid Invoices</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">You do not have any pending booking checkout sessions.</p>
+            <a href="ships.html" class="btn btn-primary">Find a Voyage</a>
+        </div>
+    </main>
+
+    <!-- Script Imports -->
+    <script src="script.js"></script>
+    <script>
+        let selectedMethod = "UPI";
+        let bookingId = 0;
+        let invoiceAmount = 0;
+        let passengerName = "";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!checkAuth("passenger")) return;
+
+            bookingId = sessionStorage.getItem("payment_booking_id");
+            invoiceAmount = sessionStorage.getItem("payment_amount");
+            passengerName = sessionStorage.getItem("payment_passenger_name");
+
+            if (!bookingId || !invoiceAmount || !passengerName) {
+                document.getElementById("no-payment-panel").style.display = "block";
+                return;
+            }
+
+            document.getElementById("no-payment-panel").style.display = "none";
+            document.getElementById("payment-panel").style.display = "block";
+
+            // Set UI details
+            document.getElementById("pay-booking-ref").textContent = `#${bookingId}`;
+            document.getElementById("pay-passenger-name").textContent = passengerName;
+            document.getElementById("pay-amount").textContent = formatCurrency(invoiceAmount);
+        });
+
+        function selectPaymentMethod(method, element) {
+            selectedMethod = method;
+            
+            // Highlight selected card
+            document.querySelectorAll(".payment-method-card").forEach(c => c.classList.remove("selected"));
+            element.classList.add("selected");
+            
+            // Hide all subforms
+            document.querySelectorAll(".payment-details-form").forEach(f => f.style.display = "none");
+            document.querySelectorAll(".payment-details-form input, .payment-details-form select").forEach(el => el.removeAttribute("required"));
+
+            // Show selected subform and activate validation
+            if (method === "UPI") {
+                document.getElementById("form-UPI").style.display = "block";
+                document.getElementById("upi-id").setAttribute("required", "true");
+            } else if (method === "Credit Card" || method === "Debit Card") {
+                document.getElementById("form-Card").style.display = "block";
+                document.getElementById("card-num").setAttribute("required", "true");
+                document.getElementById("card-expiry").setAttribute("required", "true");
+                document.getElementById("card-cvv").setAttribute("required", "true");
+            } else if (method === "Net Banking") {
+                document.getElementById("form-NetBanking").style.display = "block";
+                document.getElementById("bank-select").setAttribute("required", "true");
+            } else if (method === "Wallet") {
+                document.getElementById("form-Wallet").style.display = "block";
+                document.getElementById("wallet-select").setAttribute("required", "true");
+            }
+        }
+
+        document.getElementById("checkout-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            // Generate simulated transaction details
+            const todayStr = new Date().toISOString().split("T")[0];
+            const transactionId = "TXN" + Math.floor(100000000 + Math.random() * 900000000);
+            
+            // Payment payload mapping to Backend schema
+            const paymentPayload = {
+                booking_id: parseInt(bookingId),
+                passenger_name: passengerName,
+                amount: parseFloat(invoiceAmount),
+                payment_method: selectedMethod,
+                payment_status: "Success", // Set success state
+                transaction_id: transactionId,
+                payment_date: todayStr
+            };
+            
+            try {
+                showToast("Contacting secure payment vault...", "info");
+                
+                // 1. Post to Payment Module
+                await apiCall("/payments/add/", "POST", paymentPayload);
+                
+                // 2. Update Booking Status to Confirmed
+                showToast("Securing passenger cabins...", "info");
+                await apiCall(`/bookings/update/${bookingId}/`, "PUT", {
+                    booking_status: "Confirmed"
+                });
+
+                // Clear payment state in session
+                sessionStorage.removeItem("payment_booking_id");
+                sessionStorage.removeItem("payment_amount");
+                sessionStorage.removeItem("payment_passenger_name");
+
+                // Render Receipt Details
+                document.getElementById("receipt-txn").textContent = transactionId;
+                document.getElementById("receipt-booking").textContent = bookingId;
+                document.getElementById("receipt-passenger").textContent = passengerName;
+                document.getElementById("receipt-method").textContent = selectedMethod;
+                document.getElementById("receipt-date").textContent = formatDate(todayStr);
+                document.getElementById("receipt-amount").textContent = formatCurrency(invoiceAmount);
+
+                // Show Success Panel
+                document.getElementById("payment-panel").style.display = "none";
+                document.getElementById("success-panel").style.display = "block";
+                showToast("Transaction approved! Reservation Confirmed.", "success");
+                
+            } catch (error) {
+                console.error("Checkout process failed:", error);
+            }
+        });
+    </script>
+</body>
+</html>

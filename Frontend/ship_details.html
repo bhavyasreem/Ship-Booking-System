@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voyage Details - Nautica Cruises</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Dynamic Header Nav (Rendered via script.js) -->
+    <header id="main-header"></header>
+
+    <main class="container">
+        <!-- Back Button -->
+        <a href="ships.html" class="btn btn-secondary" style="margin-bottom: 1.5rem;"><i class="fas fa-arrow-left"></i> Back to Voyages</a>
+
+        <!-- Main Details Grid -->
+        <div id="ship-details-container" style="display: none;">
+            <div class="grid-2">
+                <!-- Left: Media & Schedule Details -->
+                <div>
+                    <!-- Gallery -->
+                    <div class="ship-gallery">
+                        <div class="gallery-main">
+                            <img id="main-gallery-img" src="https://images.unsplash.com/photo-1548574505-5e239809ee19?q=80&w=800&auto=format&fit=crop" alt="Main Ship Image">
+                        </div>
+                        <div class="gallery-thumbs">
+                            <div class="gallery-thumb active" onclick="changeGallery(this, 'https://images.unsplash.com/photo-1548574505-5e239809ee19?q=80&w=800&auto=format&fit=crop')">
+                                <img src="https://images.unsplash.com/photo-1548574505-5e239809ee19?q=80&w=200&auto=format&fit=crop" alt="Deck">
+                            </div>
+                            <div class="gallery-thumb" onclick="changeGallery(this, 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?q=80&w=800&auto=format&fit=crop')">
+                                <img src="https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?q=80&w=200&auto=format&fit=crop" alt="Lounge">
+                            </div>
+                            <div class="gallery-thumb" onclick="changeGallery(this, 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?q=80&w=800&auto=format&fit=crop')">
+                                <img src="https://images.unsplash.com/photo-1559136555-9303baea8ebd?q=80&w=200&auto=format&fit=crop" alt="Cabin Room">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Schedule Details Card -->
+                    <div class="glass-card">
+                        <h3><i class="far fa-clock" style="color: var(--color-accent-blue);"></i> Journey Schedule</h3>
+                        <div class="table-responsive" style="margin-top: 1rem;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Port</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong><i class="fas fa-sign-out-alt text-success"></i> <span id="detail-source">Source</span></strong></td>
+                                        <td id="detail-dep-date">Date</td>
+                                        <td id="detail-dep-time">00:00</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong><i class="fas fa-sign-in-alt text-danger"></i> <span id="detail-dest">Destination</span></strong></td>
+                                        <td id="detail-arr-date">Date</td>
+                                        <td id="detail-arr-time">00:00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Cabin Selection & Booking Summary -->
+                <div>
+                    <div class="glass-card gold-border">
+                        <div class="ship-detail-header">
+                            <div>
+                                <span class="badge badge-success" id="detail-status">Active</span>
+                                <h2 id="detail-ship-name" style="margin-top: 0.5rem; font-size: 2rem;">Ship Name</h2>
+                                <p style="color: var(--text-secondary); font-size: 0.9rem;" id="detail-operator">Operator</p>
+                            </div>
+                            <div class="text-right">
+                                <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Base Fare</span>
+                                <h3 style="font-size: 1.5rem; color: var(--color-gold);" id="detail-base-fare">INR 0</h3>
+                            </div>
+                        </div>
+
+                        <div class="ship-info-box">
+                            <div class="info-item">
+                                <p class="info-item-label">Ship Type</p>
+                                <p class="info-item-value" id="detail-ship-type">Cruise Ship</p>
+                            </div>
+                            <div class="info-item">
+                                <p class="info-item-label">Guest Capacity</p>
+                                <p class="info-item-value" id="detail-capacity">0 passengers</p>
+                            </div>
+                        </div>
+
+                        <h3>Select Cabin Type</h3>
+                        <div class="cabin-grid">
+                            <div class="cabin-card selected" onclick="selectCabin('Economy', 1.0, this)">
+                                <span class="badge badge-success">Available</span>
+                                <h4>Economy</h4>
+                                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Standard Cozy Cabin</p>
+                                <p class="cabin-price" id="price-Economy">INR 0</p>
+                            </div>
+                            <div class="cabin-card" onclick="selectCabin('Deluxe', 1.5, this)">
+                                <span class="badge badge-success">Available</span>
+                                <h4>Deluxe</h4>
+                                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Ocean View Window</p>
+                                <p class="cabin-price" id="price-Deluxe">INR 0</p>
+                            </div>
+                            <div class="cabin-card" onclick="selectCabin('Suite', 2.2, this)">
+                                <span class="badge badge-warning">Popular</span>
+                                <h4>Suite</h4>
+                                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Private Balcony Suite</p>
+                                <p class="cabin-price" id="price-Suite">INR 0</p>
+                            </div>
+                            <div class="cabin-card" onclick="selectCabin('Family Cabin', 1.8, this)">
+                                <span class="badge badge-success">Spacious</span>
+                                <h4>Family Cabin</h4>
+                                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Double Bed & Lounge</p>
+                                <p class="cabin-price" id="price-Family">INR 0</p>
+                            </div>
+                            <div class="cabin-card" onclick="selectCabin('VIP Cabin', 3.0, this)">
+                                <span class="badge badge-warning" style="background: rgba(212, 175, 55, 0.15); color: var(--color-gold); border-color: rgba(212, 175, 55, 0.3);">Ultimate Luxury</span>
+                                <h4>VIP Cabin</h4>
+                                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Jacuzzi & Butler Services</p>
+                                <p class="cabin-price" id="price-VIP">INR 0</p>
+                            </div>
+                        </div>
+
+                        <!-- Booking Summary -->
+                        <div style="margin-top: 2rem; border-top: 1px solid var(--border-glass); padding-top: 1.5rem;">
+                            <h3>Booking Summary</h3>
+                            <div class="summary-row">
+                                <span>Cabin Selected:</span>
+                                <strong id="summary-cabin">Economy</strong>
+                            </div>
+                            <div class="summary-row">
+                                <span>Base Price:</span>
+                                <span id="summary-base">INR 0</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Total Booking Price:</span>
+                                <span id="summary-total" style="color: var(--color-gold); font-size: 1.3rem;">INR 0</span>
+                            </div>
+                        </div>
+
+                        <button onclick="proceedToBooking()" class="btn btn-gold" style="width: 100%; margin-top: 1.5rem;"><i class="fas fa-ticket-alt"></i> Book Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="no-schedule-details" class="card text-center" style="padding: 4rem; display: block;">
+            <i class="fas fa-ship-slash" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+            <h3>No Voyage Selected</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Please search or select a voyage first.</p>
+            <a href="ships.html" class="btn btn-primary">Find a Voyage</a>
+        </div>
+    </main>
+
+    <!-- Script Imports -->
+    <script src="script.js"></script>
+    <script>
+        let baseFare = 0;
+        let selectedCabinType = "Economy";
+        let finalFareAmount = 0;
+        let selectedSchedule = null;
+        let selectedShip = null;
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            const scheduleId = sessionStorage.getItem("selected_schedule_id");
+            if (!scheduleId) return;
+            
+            try {
+                // Fetch specific schedule and ships
+                const schedules = await apiCall("/schedules/");
+                selectedSchedule = schedules.find(s => s.schedule_id == scheduleId);
+                
+                if (!selectedSchedule) {
+                    showToast("Voyage schedule not found", "danger");
+                    return;
+                }
+                
+                const ships = await apiCall("/ships/");
+                selectedShip = ships.find(s => s.ship_name === selectedSchedule.ship_name) || {
+                    ship_type: "Cruise Ship",
+                    capacity: 2000,
+                    operator_name: "Nautica Cruises",
+                    status: "Active"
+                };
+
+                // Show main details block
+                document.getElementById("no-schedule-details").style.display = "none";
+                document.getElementById("ship-details-container").style.display = "block";
+                
+                // Set text fields
+                baseFare = selectedSchedule.fare;
+                document.getElementById("detail-ship-name").textContent = selectedSchedule.ship_name;
+                document.getElementById("detail-operator").textContent = `Operated by ${selectedShip.operator_name}`;
+                document.getElementById("detail-ship-type").textContent = selectedShip.ship_type;
+                document.getElementById("detail-capacity").textContent = `${selectedShip.capacity} passengers`;
+                
+                // Status badge
+                const statusBadge = document.getElementById("detail-status");
+                statusBadge.textContent = selectedShip.status;
+                statusBadge.className = "badge";
+                if (selectedShip.status === "Active") statusBadge.classList.add("badge-success");
+                else if (selectedShip.status === "Maintenance") statusBadge.classList.add("badge-warning");
+                else statusBadge.classList.add("badge-danger");
+
+                // Route Details
+                document.getElementById("detail-source").textContent = selectedSchedule.source_port;
+                document.getElementById("detail-dest").textContent = selectedSchedule.destination_port;
+                document.getElementById("detail-dep-date").textContent = formatDate(selectedSchedule.departure_date);
+                document.getElementById("detail-dep-time").textContent = selectedSchedule.departure_time;
+                document.getElementById("detail-arr-date").textContent = formatDate(selectedSchedule.arrival_date);
+                document.getElementById("detail-arr-time").textContent = selectedSchedule.arrival_time;
+
+                // Set Base Fare Display
+                document.getElementById("detail-base-fare").textContent = formatCurrency(baseFare);
+                document.getElementById("summary-base").textContent = formatCurrency(baseFare);
+
+                // Set Cabin Fare Calculations
+                document.getElementById("price-Economy").textContent = formatCurrency(baseFare * 1.0);
+                document.getElementById("price-Deluxe").textContent = formatCurrency(baseFare * 1.5);
+                document.getElementById("price-Suite").textContent = formatCurrency(baseFare * 2.2);
+                document.getElementById("price-Family").textContent = formatCurrency(baseFare * 1.8);
+                document.getElementById("price-VIP").textContent = formatCurrency(baseFare * 3.0);
+
+                // Default initial pricing
+                selectCabin('Economy', 1.0, document.querySelector(".cabin-card"));
+                
+            } catch (error) {
+                console.error("Error loading ship details", error);
+            }
+        });
+
+        // Image switcher
+        function changeGallery(thumbEl, imageUrl) {
+            document.querySelectorAll(".gallery-thumb").forEach(t => t.classList.remove("active"));
+            thumbEl.classList.add("active");
+            document.getElementById("main-gallery-img").src = imageUrl;
+        }
+
+        // Cabin selection updates
+        function selectCabin(cabinType, multiplier, element) {
+            selectedCabinType = cabinType;
+            finalFareAmount = baseFare * multiplier;
+            
+            // Highlight selected
+            document.querySelectorAll(".cabin-card").forEach(c => c.classList.remove("selected"));
+            element.classList.add("selected");
+            
+            // Update Booking Summary
+            document.getElementById("summary-cabin").textContent = cabinType;
+            document.getElementById("summary-total").textContent = formatCurrency(finalFareAmount);
+        }
+
+        function proceedToBooking() {
+            // Check authentication
+            const user = getCurrentUser();
+            if (!user) {
+                showToast("Please sign in to proceed with booking", "warning");
+                sessionStorage.setItem("redirect_after_login", "ship_details.html");
+                setTimeout(() => {
+                    window.location.href = "login.html";
+                }, 1000);
+                return;
+            }
+
+            if (selectedShip.status === "Maintenance" || selectedShip.status === "Inactive") {
+                showToast("This ship is currently unavailable due to maintenance/status.", "danger");
+                return;
+            }
+            
+            // Save state for Booking Page
+            sessionStorage.setItem("booking_cabin_type", selectedCabinType);
+            sessionStorage.setItem("booking_total_amount", finalFareAmount);
+            
+            window.location.href = "booking.html";
+        }
+    </script>
+</body>
+</html>

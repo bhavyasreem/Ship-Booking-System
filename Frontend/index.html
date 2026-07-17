@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nautica Cruises - Premium Ship Booking System</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Dynamic Header Nav (Rendered via script.js) -->
+    <header id="main-header"></header>
+
+    <main class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <h1>Embark on Extraordinary Journeys</h1>
+            <p>Discover luxury cruises, efficient ferry services, and bespoke sea voyages with premium bookings and real-time schedules.</p>
+            <a href="ships.html" class="btn btn-gold"><i class="fas fa-compass"></i> Explore All Ships</a>
+        </section>
+
+        <!-- Search Form Section -->
+        <section class="glass-card">
+            <h2 class="section-title"><i class="fas fa-search-location" style="color: var(--color-accent-blue);"></i> Search Your Journey</h2>
+            <form id="search-journey-form">
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label class="form-label" for="search-source">Source Port</label>
+                        <select id="search-source" class="form-control" required>
+                            <option value="">Select departure port...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="search-destination">Destination Port</label>
+                        <select id="search-destination" class="form-control" required>
+                            <option value="">Select destination port...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="search-date">Departure Date</label>
+                        <input type="date" id="search-date" class="form-control" required>
+                    </div>
+                </div>
+                <div class="text-right" style="margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Search Available Ships</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Featured Cruises / Schedules -->
+        <section class="mb-2">
+            <h2 class="section-title"><i class="fas fa-anchor" style="color: var(--color-gold);"></i> Featured Voyages</h2>
+            <div id="featured-cruises-container" class="grid-3">
+                <!-- Will be loaded dynamically from schedules -->
+                <div class="card text-center" style="grid-column: 1 / -1; padding: 3rem;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--color-accent-blue); margin-bottom: 1rem;"></i>
+                    <p>Loading available schedules...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Latest Offers Section -->
+        <section class="glass-card gold-border">
+            <h2 class="section-title"><i class="fas fa-tags" style="color: var(--color-gold);"></i> Exclusive Travel Offers</h2>
+            <div class="grid-2">
+                <div class="offer-banner">
+                    <div>
+                        <span class="badge badge-warning" style="margin-bottom: 0.5rem;">Early Bird Special</span>
+                        <h3>Monsoon Getaway: Chennai to Port Blair</h3>
+                        <p>Book 30 days in advance and get 15% off deluxe & suite cabins.</p>
+                    </div>
+                    <button class="btn btn-gold" onclick="applyOffer('MONSOON15')">Claim 15%</button>
+                </div>
+                <div class="offer-banner">
+                    <div>
+                        <span class="badge badge-success" style="margin-bottom: 0.5rem;">VIP Executive</span>
+                        <h3>Luxury Suite Upgrade Package</h3>
+                        <p>Enjoy free lounge access, priority check-in & gourmet dining.</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="applyOffer('VIPUPGRADE')">Learn More</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Script Imports -->
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Load source and destination ports dynamically
+            try {
+                const schedules = await apiCall("/schedules/");
+                const sourceSelect = document.getElementById("search-source");
+                const destSelect = document.getElementById("search-destination");
+                
+                // Get unique ports
+                const sources = [...new Set(schedules.map(s => s.source_port))];
+                const destinations = [...new Set(schedules.map(s => s.destination_port))];
+                
+                sources.forEach(port => {
+                    const opt = document.createElement("option");
+                    opt.value = port;
+                    opt.textContent = port;
+                    sourceSelect.appendChild(opt);
+                });
+                
+                destinations.forEach(port => {
+                    const opt = document.createElement("option");
+                    opt.value = port;
+                    opt.textContent = port;
+                    destSelect.appendChild(opt);
+                });
+
+                // Set min date to today
+                const today = new Date().toISOString().split("T")[0];
+                document.getElementById("search-date").min = today;
+                
+                // Render featured cruises
+                renderFeaturedSchedules(schedules);
+            } catch (error) {
+                console.error("Error loading home page details", error);
+                document.getElementById("featured-cruises-container").innerHTML = `
+                    <div class="card text-center" style="grid-column: 1 / -1; padding: 2rem;">
+                        <i class="fas fa-exclamation-triangle text-danger" style="font-size: 2.5rem; margin-bottom: 1rem;"></i>
+                        <p>Unable to load live voyages. Please check your backend connection.</p>
+                    </div>
+                `;
+            }
+        });
+
+        // Search Form Submit Handler
+        document.getElementById("search-journey-form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const source = document.getElementById("search-source").value;
+            const dest = document.getElementById("search-destination").value;
+            const date = document.getElementById("search-date").value;
+            
+            // Save search params
+            sessionStorage.setItem("search_source", source);
+            sessionStorage.setItem("search_dest", dest);
+            sessionStorage.setItem("search_date", date);
+            
+            window.location.href = "ships.html";
+        });
+
+        // Render top 3 schedules as featured
+        function renderFeaturedSchedules(schedules) {
+            const container = document.getElementById("featured-cruises-container");
+            if (!schedules || schedules.length === 0) {
+                container.innerHTML = `
+                    <div class="card text-center" style="grid-column: 1 / -1; padding: 2rem;">
+                        <i class="fas fa-compass" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                        <p>No active ship schedules found at the moment.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = "";
+            
+            // Pick up to 3 schedules to feature
+            const featured = schedules.slice(0, 3);
+            
+            featured.forEach(sch => {
+                const card = document.createElement("div");
+                card.className = "card";
+                
+                // Assign a background image tag based on name or index
+                let imgUrl = "https://images.unsplash.com/photo-1548574505-5e239809ee19?q=80&w=400&auto=format&fit=crop";
+                if (sch.ship_name.toLowerCase().includes("ferry")) {
+                    imgUrl = "https://images.unsplash.com/photo-1559136555-9303baea8ebd?q=80&w=400&auto=format&fit=crop";
+                } else if (sch.ship_name.toLowerCase().includes("paradise") || sch.ship_name.toLowerCase().includes("yacht")) {
+                    imgUrl = "https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?q=80&w=400&auto=format&fit=crop";
+                }
+                
+                card.innerHTML = `
+                    <div class="card-img-placeholder">
+                        <img src="${imgUrl}" alt="${sch.ship_name}">
+                        <div class="card-tag gold">★ Premium Route</div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h3>${sch.ship_name}</h3>
+                        <span style="font-weight: 700; color: var(--color-gold); font-size: 1.15rem;">${formatCurrency(sch.fare)}</span>
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                        <i class="fas fa-map-marker-alt"></i> ${sch.source_port} to ${sch.destination_port}
+                    </p>
+                    <div style="font-size: 0.85rem; border-top: 1px solid var(--border-glass); padding-top: 0.75rem; display: flex; justify-content: space-between; color: var(--text-muted);">
+                        <span><i class="far fa-calendar-alt"></i> ${formatDate(sch.departure_date)}</span>
+                        <span><i class="far fa-clock"></i> ${sch.departure_time}</span>
+                    </div>
+                    <button onclick="bookFeaturedSchedule(${sch.schedule_id})" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Book Now</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function bookFeaturedSchedule(scheduleId) {
+            sessionStorage.setItem("selected_schedule_id", scheduleId);
+            window.location.href = "ship_details.html";
+        }
+
+        function applyOffer(code) {
+            showToast(`Offer ${code} claimed! Direct discounts will apply on checkout.`, "success");
+            sessionStorage.setItem("promo_code", code);
+        }
+    </script>
+</body>
+</html>

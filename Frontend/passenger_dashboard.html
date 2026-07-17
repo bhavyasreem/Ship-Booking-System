@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passenger Dashboard - Nautica Cruises</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Dynamic Header Nav (Rendered via script.js) -->
+    <header id="main-header"></header>
+
+    <main class="container">
+        <!-- Dashboard Welcome Banner -->
+        <section class="glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2 style="font-size: 2.2rem; margin-bottom: 0.25rem;">Hello, <span id="dash-passenger-name" style="color: var(--color-gold);">Passenger</span></h2>
+                    <p style="color: var(--text-secondary);">Manage your travels, print boarding passes, and update your credentials.</p>
+                </div>
+                <button onclick="openModal('edit-profile-modal')" class="btn btn-primary"><i class="fas fa-user-edit"></i> Edit Profile</button>
+            </div>
+        </section>
+
+        <!-- Stats Boxes -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-list-alt"></i></div>
+                <div>
+                    <div class="stat-value" id="stat-total-bookings">0</div>
+                    <div class="stat-label">Total Bookings</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon gold"><i class="fas fa-calendar-check"></i></div>
+                <div>
+                    <div class="stat-value" id="stat-upcoming-trips">0</div>
+                    <div class="stat-label">Upcoming Journeys</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon teal"><i class="fas fa-check-circle"></i></div>
+                <div>
+                    <div class="stat-value" id="stat-completed-trips">0</div>
+                    <div class="stat-label">Completed Trips</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fas fa-wallet"></i></div>
+                <div>
+                    <div class="stat-value" id="stat-total-spent">INR 0</div>
+                    <div class="stat-label">Total Spent</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Details Card & Quick links -->
+        <div class="grid-3">
+            <!-- Profile Info card -->
+            <div class="glass-card" style="grid-column: span 2;">
+                <h3><i class="fas fa-id-card-alt" style="color: var(--color-accent-blue);"></i> My Profile Information</h3>
+                <div style="margin-top: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div>
+                        <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); display: block;">Full Name</span>
+                        <strong style="font-size: 1.15rem;" id="profile-name">Loading...</strong>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); display: block;">Email Address</span>
+                        <strong style="font-size: 1.15rem;" id="profile-email">Loading...</strong>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); display: block;">Passport Number</span>
+                        <strong style="font-size: 1.15rem;" id="profile-passport">Loading...</strong>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); display: block;">Nationality</span>
+                        <strong style="font-size: 1.15rem;" id="profile-nationality">Loading...</strong>
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); display: block;">Phone Number</span>
+                        <strong style="font-size: 1.15rem;" id="profile-phone">Loading...</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links / Shortcuts -->
+            <div class="glass-card gold-border">
+                <h3>Quick Shortcuts</h3>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem;">
+                    <a href="ships.html" class="btn btn-primary" style="justify-content: flex-start;"><i class="fas fa-search"></i> Book a New Cruise</a>
+                    <a href="booking_history.html" class="btn btn-secondary" style="justify-content: flex-start;"><i class="fas fa-ticket-alt"></i> View Travel Tickets</a>
+                    <button onclick="logout()" class="btn btn-danger" style="justify-content: flex-start;"><i class="fas fa-sign-out-alt"></i> Log Out Account</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Booking Table Quick View -->
+        <section class="glass-card" style="margin-top: 2rem;">
+            <h3>Recent Booking Log</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Ship Name</th>
+                            <th>Voyage Route</th>
+                            <th>Date</th>
+                            <th>Cabin</th>
+                            <th>Fare</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-bookings-log">
+                        <tr>
+                            <td colspan="7" class="text-center">Loading transactions...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Profile Edit Modal -->
+    <div id="edit-profile-modal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Profile details</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="edit-profile-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="edit-name">Full Name</label>
+                        <input type="text" id="edit-name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="edit-phone">Phone Number</label>
+                        <input type="tel" id="edit-phone" class="form-control" required>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label" for="edit-nationality">Nationality</label>
+                            <input type="text" id="edit-nationality" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="edit-passport">Passport Number</label>
+                            <input type="text" id="edit-passport" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="edit-password">Update Password</label>
+                        <input type="password" id="edit-password" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script Imports -->
+    <script src="script.js"></script>
+    <script>
+        let bookingsList = [];
+        let paymentsList = [];
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            if (!checkAuth("passenger")) return;
+
+            // Load Passenger Profile values
+            const user = getCurrentUser();
+            fillProfileDetails(user);
+
+            // Fetch statistics
+            await loadStatistics();
+            calculateMetrics();
+            renderRecentBookings();
+        });
+
+        function fillProfileDetails(user) {
+            document.getElementById("dash-passenger-name").textContent = user.full_name;
+            document.getElementById("profile-name").textContent = user.full_name;
+            document.getElementById("profile-email").textContent = user.email;
+            document.getElementById("profile-passport").textContent = user.passport_number;
+            document.getElementById("profile-nationality").textContent = user.nationality;
+            document.getElementById("profile-phone").textContent = user.phone;
+
+            // Set inputs inside Modal
+            document.getElementById("edit-name").value = user.full_name;
+            document.getElementById("edit-phone").value = user.phone;
+            document.getElementById("edit-nationality").value = user.nationality;
+            document.getElementById("edit-passport").value = user.passport_number;
+            document.getElementById("edit-password").value = user.password;
+        }
+
+        async function loadStatistics() {
+            const user = getCurrentUser();
+            try {
+                // Retrieve all bookings and payments
+                const bookings = await apiCall("/bookings/");
+                paymentsList = await apiCall("/payments/");
+                
+                // Filter matching bookings
+                bookingsList = bookings.filter(b => b.passenger_name === user.full_name);
+            } catch (error) {
+                console.error("Dashboard failed to retrieve data logs:", error);
+            }
+        }
+
+        function calculateMetrics() {
+            const total = bookingsList.length;
+            document.getElementById("stat-total-bookings").textContent = total;
+
+            const today = new Date().toISOString().split("T")[0];
+            
+            // Calculate upcoming (journey_date >= today and status != Cancelled)
+            const upcoming = bookingsList.filter(b => b.journey_date >= today && b.booking_status !== "Cancelled").length;
+            document.getElementById("stat-upcoming-trips").textContent = upcoming;
+
+            // Calculate completed (journey_date < today and status == Confirmed)
+            const completed = bookingsList.filter(b => b.journey_date < today && b.booking_status === "Confirmed").length;
+            document.getElementById("stat-completed-trips").textContent = completed;
+
+            // Sum payments
+            const userPayments = paymentsList.filter(p => p.passenger_name === getCurrentUser().full_name && p.payment_status === "Success");
+            const spent = userPayments.reduce((sum, pay) => sum + pay.amount, 0);
+            document.getElementById("stat-total-spent").textContent = formatCurrency(spent);
+        }
+
+        function renderRecentBookings() {
+            const body = document.getElementById("recent-bookings-log");
+            body.innerHTML = "";
+
+            if (bookingsList.length === 0) {
+                body.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center" style="color: var(--text-muted);">No journeys reserved yet.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Display top 5 recent bookings
+            const recent = bookingsList.slice().reverse().slice(0, 5);
+
+            recent.forEach(booking => {
+                let badgeClass = "badge-warning";
+                if (booking.booking_status === "Confirmed") badgeClass = "badge-success";
+                else if (booking.booking_status === "Cancelled") badgeClass = "badge-danger";
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>#${booking.booking_id}</strong></td>
+                    <td>${booking.ship_name}</td>
+                    <td>${booking.source_port} to ${booking.destination_port}</td>
+                    <td>${formatDate(booking.journey_date)}</td>
+                    <td>${booking.cabin_type}</td>
+                    <td style="font-weight:700;">${formatCurrency(booking.total_amount)}</td>
+                    <td><span class="badge ${badgeClass}">${booking.booking_status}</span></td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        // Submit Profile Edits
+        document.getElementById("edit-profile-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const user = getCurrentUser();
+            const payload = {
+                full_name: document.getElementById("edit-name").value,
+                phone: document.getElementById("edit-phone").value,
+                nationality: document.getElementById("edit-nationality").value,
+                passport_number: document.getElementById("edit-passport").value,
+                password: document.getElementById("edit-password").value
+            };
+
+            try {
+                showToast("Updating profile settings...", "info");
+                const updatedUser = await apiCall(`/passengers/update/${user.passenger_id}/`, "PUT", payload);
+                
+                // Re-merge role
+                updatedUser.role = "passenger";
+                
+                // Set locally and re-fill UI
+                setCurrentUser(updatedUser);
+                fillProfileDetails(updatedUser);
+                
+                closeModal("edit-profile-modal");
+                showToast("Profile settings saved successfully!", "success");
+            } catch (error) {
+                console.error("Failed to update profile:", error);
+            }
+        });
+    </script>
+</body>
+</html>

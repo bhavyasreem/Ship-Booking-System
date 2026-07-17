@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Booking - Nautica Cruises</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Dynamic Header Nav (Rendered via script.js) -->
+    <header id="main-header"></header>
+
+    <main class="container">
+        <div class="grid-2">
+            <!-- Left: Passenger details form -->
+            <div>
+                <section class="glass-card">
+                    <h2 class="section-title"><i class="fas fa-id-card" style="color: var(--color-accent-blue);"></i> Passenger Information</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Please verify your contact and passport details before confirming the journey.</p>
+                    
+                    <form id="booking-passenger-form">
+                        <div class="form-group">
+                            <label class="form-label" for="book-name">Passenger Full Name</label>
+                            <input type="text" id="book-name" class="form-control" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="book-email">Email Address</label>
+                            <input type="email" id="book-email" class="form-control" readonly>
+                        </div>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label class="form-label" for="book-passport">Passport Number</label>
+                                <input type="text" id="book-passport" class="form-control" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="book-nationality">Nationality</label>
+                                <input type="text" id="book-nationality" class="form-control" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="book-phone">Phone Number</label>
+                            <input type="text" id="book-phone" class="form-control" readonly>
+                        </div>
+                        
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem;">
+                            * Passenger details are bound to your account profile. To update these details, visit your profile dashboard.
+                        </p>
+                    </form>
+                </section>
+            </div>
+
+            <!-- Right: Booking Voyage Summary -->
+            <div>
+                <section class="glass-card gold-border">
+                    <h2 class="section-title"><i class="fas fa-receipt" style="color: var(--color-gold);"></i> Voyage Summary</h2>
+                    <div id="booking-summary-details" style="margin-top: 1.5rem;">
+                        <!-- Dynamically filled -->
+                        <div class="summary-row">
+                            <span>Ship Name:</span>
+                            <strong id="sum-ship">Ship Name</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>Route:</span>
+                            <span id="sum-route">Source to Destination</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Date:</span>
+                            <span id="sum-date">Journey Date</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Cabin Type:</span>
+                            <strong id="sum-cabin">Cabin Type</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>Promo Discount:</span>
+                            <span id="sum-discount" class="text-success">INR 0</span>
+                        </div>
+                        <div class="summary-row" style="margin-top: 1rem;">
+                            <span>Total Fare:</span>
+                            <strong id="sum-total" style="color: var(--color-gold); font-size: 1.4rem;">INR 0</strong>
+                        </div>
+                    </div>
+                    
+                    <button onclick="confirmBooking()" class="btn btn-gold" style="width: 100%; margin-top: 2rem;"><i class="fas fa-credit-card"></i> Proceed to Payment</button>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Script Imports -->
+    <script src="script.js"></script>
+    <script>
+        let currentSchedule = null;
+        let finalAmount = 0;
+        let discount = 0;
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Require login
+            if (!checkAuth("passenger")) return;
+
+            const scheduleId = sessionStorage.getItem("selected_schedule_id");
+            const cabinType = sessionStorage.getItem("booking_cabin_type");
+            const totalAmountStr = sessionStorage.getItem("booking_total_amount");
+            const user = getCurrentUser();
+
+            if (!scheduleId || !cabinType || !totalAmountStr) {
+                showToast("Missing booking data. Redirecting back to ship explorer.", "warning");
+                setTimeout(() => {
+                    window.location.href = "ships.html";
+                }, 1000);
+                return;
+            }
+
+            // Fill passenger form from logged-in user
+            document.getElementById("book-name").value = user.full_name;
+            document.getElementById("book-email").value = user.email;
+            document.getElementById("book-passport").value = user.passport_number;
+            document.getElementById("book-nationality").value = user.nationality;
+            document.getElementById("book-phone").value = user.phone;
+
+            // Fetch schedule details
+            try {
+                const schedules = await apiCall("/schedules/");
+                currentSchedule = schedules.find(s => s.schedule_id == scheduleId);
+                
+                if (!currentSchedule) {
+                    showToast("Selected voyage schedule is no longer active", "danger");
+                    return;
+                }
+
+                // Check promo codes
+                const promo = sessionStorage.getItem("promo_code");
+                let baseAmount = parseFloat(totalAmountStr);
+                
+                if (promo === "MONSOON15") {
+                    discount = baseAmount * 0.15;
+                    finalAmount = baseAmount - discount;
+                    document.getElementById("sum-discount").textContent = `- ${formatCurrency(discount)} (15% Code applied)`;
+                } else {
+                    finalAmount = baseAmount;
+                    document.getElementById("sum-discount").textContent = "None";
+                }
+
+                // Fill voyage summary
+                document.getElementById("sum-ship").textContent = currentSchedule.ship_name;
+                document.getElementById("sum-route").textContent = `${currentSchedule.source_port} to ${currentSchedule.destination_port}`;
+                document.getElementById("sum-date").textContent = `${formatDate(currentSchedule.departure_date)} at ${currentSchedule.departure_time}`;
+                document.getElementById("sum-cabin").textContent = cabinType;
+                document.getElementById("sum-total").textContent = formatCurrency(finalAmount);
+
+            } catch (error) {
+                console.error("Booking initialization failed:", error);
+            }
+        });
+
+        async function confirmBooking() {
+            const user = getCurrentUser();
+            const cabinType = sessionStorage.getItem("booking_cabin_type");
+
+            if (!currentSchedule || !user || !cabinType) {
+                showToast("Booking data validation failed", "danger");
+                return;
+            }
+
+            // Prepare Booking POST Payload
+            const payload = {
+                passenger_name: user.full_name,
+                ship_name: currentSchedule.ship_name,
+                cabin_type: cabinType,
+                journey_date: currentSchedule.departure_date,
+                source_port: currentSchedule.source_port,
+                destination_port: currentSchedule.destination_port,
+                total_amount: finalAmount,
+                booking_status: "Waiting" // Starts as Waiting until Payment success
+            };
+
+            try {
+                showToast("Creating booking reservation...", "info");
+                const newBooking = await apiCall("/bookings/add/", "POST", payload);
+                
+                // Save Booking ID to session for payment page
+                sessionStorage.setItem("payment_booking_id", newBooking.booking_id);
+                sessionStorage.setItem("payment_amount", finalAmount);
+                sessionStorage.setItem("payment_passenger_name", user.full_name);
+                
+                showToast("Reservation saved! Redirecting to payment portal...", "success");
+                setTimeout(() => {
+                    window.location.href = "payment.html";
+                }, 1000);
+            } catch (error) {
+                console.error("Booking generation failed:", error);
+            }
+        }
+    </script>
+</body>
+</html>
