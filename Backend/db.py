@@ -2,7 +2,7 @@ import pymongo
 from pymongo import ReturnDocument
 
 # MongoDB Atlas connection details
-CONNECTION_STRING = "mongodb+srv://Doremon_12:RRobertR%408908@cluster0.zx7ka0h.mongodb.net/"
+CONNECTION_STRING = "....."
 client = pymongo.MongoClient(CONNECTION_STRING)
 db = client["ship_booking_db"]
 
